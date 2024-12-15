@@ -78,7 +78,7 @@ func TestLogValue(t *testing.T) {
 		Name:     "tom",
 		Password: "pass",
 	}
-	slog.Info("test log value", slog.Any("value", v.LogValue()))
+	slog.Info("test log value", slog.Any("value", v))
 }
 
 func TestPkgErrors(t *testing.T) {
