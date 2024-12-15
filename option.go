@@ -2,19 +2,21 @@ package logger
 
 import (
 	"log/slog"
-	"path/filepath"
-	"github.com/mdobak/go-xerrors"
+	// "path/filepath"
 
+	// "github.com/mdobak/go-xerrors"
+	"github.com/pkg/errors"
+	"fmt"
+	"strings"
 )
 
 type StackFrame struct {
 	Func   string `json:"func"`
 	Source string `json:"source"`
-	Line   int    `json:"line"`
+	Line   string    `json:"line"`
 }
 
-
-// ReplaceAttr using for slog.Options.Replace 
+// ReplaceAttr using for slog.Options.Replace
 func ReplaceAttr(_ []string, attr slog.Attr) slog.Attr {
 	switch attr.Value.Kind() {
 	case slog.KindAny:
@@ -28,44 +30,37 @@ func ReplaceAttr(_ []string, attr slog.Attr) slog.Attr {
 
 // marshalStack extracts stack frames from the error
 func marshalStack(err error) []StackFrame {
-	trace := xerrors.StackTrace(err)
-	if len(trace) == 0 {
-		return nil
+	if causer, ok := errors.Cause(err).(interface{ StackTrace() errors.StackTrace }); ok {
+		stackTrace := causer.StackTrace()
+		frames := make([]StackFrame, len(stackTrace))
+		for i, frame := range stackTrace {
+			source := fmt.Sprintf("%+s", frame)
+			line := fmt.Sprintf("%d", frame)
+
+			// github.com/pkg/errors is archived and the implementation for getting function name or source file is inconvenient
+			// TODO: replace github.com/pkg/errors with github.com/mdobak/go-xerrors
+			source = strings.Replace(source, "\n\t", " ", -1)
+			ss := strings.Split(source, " ") // source string slice
+			// source = ss[0]
+			// function := ss[1]
+			
+			frames[i].Source = ss[0]
+			frames[i].Func = ss[1]
+			frames[i].Line = line 
+		}
+		return frames
 	}
 
-	frames := trace.Frames()
-	s := make([]StackFrame, len(frames))
-	for i, v := range frames {
-		f := StackFrame{
-			Source: filepath.Join(
-				filepath.Base(filepath.Dir(v.File)),
-				filepath.Base(v.File),
-			),
-			Func: filepath.Base(v.Function),
-			Line: v.Line,
-		}
-		s[i] = f
-	}
-	return s
+	return nil 
 }
 
-// fmtErr returns a slog.Value with keys `msg` and `trace`. If the error
-// does not implement interface { StackTrace() errors.StackTrace }, the `trace`
-// key is omitted.
+
 func fmtErr(err error) slog.Value {
-	// var groupValues []slog.Attr
-	// groupValues = append(groupValues, slog.String("msg", err.Error()))
-	// frames := marshalStack(err)
-	// if frames != nil {
-	// 	groupValues = append(groupValues,
-	// 		slog.Any("trace", frames),
-	// 	)
-	// }
-	// return slog.GroupValue(groupValues...)
-	
 	mp := make(map[string]any, 2)
-	mp["error"] = err.Error()
-	mp["trace"] = marshalStack(err)
+	mp["message"] = err.Error()
+	frames := marshalStack(err)
+	if frames != nil {
+		mp["trace"] = frames
+	}
 	return (slog.AnyValue(mp))
 }
-

@@ -4,7 +4,6 @@ go 1.21.4
 
 require (
 	github.com/fatih/color v1.18.0
-	github.com/mdobak/go-xerrors v0.3.1
 	github.com/pkg/errors v0.9.1
 )
 

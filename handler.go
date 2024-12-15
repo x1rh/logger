@@ -54,7 +54,7 @@ func (h *PrettyHandler) Handle(ctx context.Context, r slog.Record) error {
 	}
 
 	h.l.Println(
-		r.Time.Format("[15:05:05.000]"),
+		r.Time.Format("[2006-01-02|15:05:05.000]"),
 		level,
 		color.CyanString(r.Message),
 		string(b),

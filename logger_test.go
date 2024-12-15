@@ -10,7 +10,6 @@ import (
 
 	errorsx "errors"
 
-	"github.com/mdobak/go-xerrors"
 	"github.com/pkg/errors"
 )
 
@@ -55,7 +54,7 @@ func TestPrettyLogger(t *testing.T) {
 
 	logger.Error(
 		"An error occurred while processing the request",
-		slog.Any("url", xerrors.New("https://example.com")),
+		slog.Any("err", errors.New("errors error")),
 	)
 }
 
@@ -92,7 +91,7 @@ func TestPkgErrors(t *testing.T) {
 			line := fmt.Sprintf("%d", frame)
 
 			// github.com/pkg/errors is archived and the implementation for getting function name or source file is inconvenient
-			// TODO: replace github.com/pkg/errors with github.com/mdobak/go-xerrors
+			// TODO: replace github.com/pkg/errors with a self make `errx` package 
 			source = strings.Replace(source, "\n\t", " ", -1)
 			ss := strings.Split(source, " ") // source string slice
 			source = ss[0]
@@ -103,7 +102,6 @@ func TestPkgErrors(t *testing.T) {
 			fmt.Println("func:", function)
 		}
 	}
-
 }
 
 func TestJsonHandlerError(t *testing.T) {
@@ -112,7 +110,7 @@ func TestJsonHandlerError(t *testing.T) {
 	})
 	logger := slog.New(h)
 	ctx := context.Background()
-	err := xerrors.New("something happened")
+	err := errors.New("something happened")
 	logger.ErrorContext(ctx, "image uploaded", slog.Any("error", err))
 	logger.Error("image uploaded", slog.Any("error", err))
 
