@@ -5,16 +5,19 @@ usage
 ```go
 import (
     "log/slog"
-    "github.com/x1rh/logger"
+    _ "github.com/x1rh/logger"
 )
 
 func main() {
+    // initialize it by importing it
+    slog.Info("hello")
+    slog.Info("message 1", slog.String("key", "value"))
+    slog.Error("error")
+
+    // or Configure() it again 
     logLevel := slog.LevelDebug
     addSource := true
     logger.Configure(logLevel, addSource)
-
-    slog.Info("hello")
-    slog.Error("error")
 }
 ```
 
