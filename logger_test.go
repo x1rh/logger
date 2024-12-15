@@ -90,8 +90,6 @@ func TestPkgErrors(t *testing.T) {
 			source := fmt.Sprintf("%+s", frame)
 			line := fmt.Sprintf("%d", frame)
 
-			// github.com/pkg/errors is archived and the implementation for getting function name or source file is inconvenient
-			// TODO: replace github.com/pkg/errors with a self make `errx` package 
 			source = strings.Replace(source, "\n\t", " ", -1)
 			ss := strings.Split(source, " ") // source string slice
 			source = ss[0]
